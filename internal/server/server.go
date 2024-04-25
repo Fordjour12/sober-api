@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sober-api/internal/database"
 	"strconv"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-
-	"sober-api/internal/database"
 )
 
 type Server struct {

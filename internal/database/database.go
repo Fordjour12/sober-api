@@ -14,6 +14,8 @@ import (
 
 type Service interface {
 	Health() map[string]string
+	// CreateOnBoardingFlow(*helper.OnBoardingRequest) error
+	// CreateAccountFlow(ac *helper.CreateAccountRequest) error
 }
 
 type service struct {
@@ -34,12 +36,15 @@ func New() Service {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := &service{db: db}
+	s := &service{
+		db: db,
+	}
+
 	return s
 }
 
 func (s *service) Health() map[string]string {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := s.db.PingContext(ctx)
