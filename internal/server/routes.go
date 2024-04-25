@@ -34,7 +34,9 @@ func (s *Server) CreateAccountHandler(w http.ResponseWriter, r *http.Request) er
 }
 
 func (s *Server) LogInAccountHandler(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
+		Data: map[string]string{"message": "Account Logged In"},
+	})
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
