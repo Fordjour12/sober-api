@@ -16,7 +16,7 @@ import (
 type Service interface {
 	Health() map[string]string
 	CreateOnBoardingFlow(*helper.OnBoardingRequest) error
-	CreateAccountFlow(ac *helper.CreateAccountRequest) error
+	CreateAccountFlow(*helper.CreateAccountRequest) error
 }
 
 type service struct {
@@ -34,7 +34,7 @@ var (
 )
 
 func New() Service {
-	// connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
+	//connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
 	connStr := fmt.Sprint(database_uri)
 
 	db, err := sql.Open("pgx", connStr)
@@ -113,26 +113,32 @@ func (s *service) CreateOnBoardingFlow(ob *helper.OnBoardingRequest) error {
 		ob.Sobriety.SoberDate,
 	)
 
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Onboarding Created: %+v\n", ob)
+
 	return nil
 }
 
 func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) error {
 
-	// FIXME: add a returning statement to get the user data back
-	query := `insert into users(username, email, password,created_at) values($1, $2, $3,$4)`
+	fmt.Printf("Account CreateAccountFlow: %+v\n", ac)
+
+	query := `insert into users(username, email, password,created_at) values ($1, $2, $3, $4)`
 
 	_, err := s.db.Exec(
 		query,
 		ac.Username,
 		ac.Email,
 		ac.Password,
+		ac.CreatedAt,
 	)
-
 	if err != nil {
 		return err
 	}
 
-	log.Printf("User Created: %+v ", ac)
-
 	return nil
+
 }
