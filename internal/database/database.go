@@ -29,13 +29,10 @@ var (
 	username = os.Getenv("DB_USERNAME")
 	port     = os.Getenv("DB_PORT")
 	host     = os.Getenv("DB_HOST")
-
-	database_uri = os.Getenv("DATABASE_URL")
 )
 
 func New() Service {
-	//connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
-	connStr := fmt.Sprint(database_uri)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
 
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
