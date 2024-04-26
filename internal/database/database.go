@@ -103,11 +103,36 @@ func (s *service) Health() map[string]string {
 	}
 }
 
-func (s *service) CreateOnBoardingFlow(*helper.OnBoardingRequest) error {
+func (s *service) CreateOnBoardingFlow(ob *helper.OnBoardingRequest) error {
+	query := `insert into onboarding(user_id, reason, sober_date,created_at) values($1, $2, $3,$4)`
+
+	_, err := s.db.Exec(
+		query,
+		ob.UserId,
+		ob.Sobriety.ReasonForJoining,
+		ob.Sobriety.SoberDate,
+	)
 
 	return nil
 }
 
 func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) error {
+
+	// FIXME: add a returning statement to get the user data back
+	query := `insert into users(username, email, password,created_at) values($1, $2, $3,$4)`
+
+	_, err := s.db.Exec(
+		query,
+		ac.Username,
+		ac.Email,
+		ac.Password,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("User Created: %+v ", ac)
+
 	return nil
 }
