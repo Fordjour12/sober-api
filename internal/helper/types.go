@@ -24,9 +24,10 @@ type OnBoardingRequest struct {
 
 func CreateUserAccount(username, email, password string) (*CreateAccountRequest, error) {
 	return &CreateAccountRequest{
-		Username: username,
-		Email:    email,
-		Password: password,
+		Username:  username,
+		Email:     email,
+		Password:  password,
+		CreatedAt: time.Now().UTC(),
 	}, nil
 
 }
@@ -39,6 +40,7 @@ func AddOnBoardingFlow(userId int, reason, date string) (*OnBoardingRequest, err
 			ReasonForJoining: reason,
 			SoberDate:        date,
 		},
+		CreatedAt: time.Now().UTC(),
 	}, nil
 
 }
