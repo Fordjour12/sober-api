@@ -22,14 +22,52 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (s *Server) OnBoardingHandler(w http.ResponseWriter, r *http.Request) error {
+
+	onBoardingReq := &helper.OnBoardingRequest{}
+	if err := json.NewDecoder(r.Body).Decode(onBoardingReq); err != nil {
+		return err
+	}
+
+	onBoard, err := helper.AddOnBoardingFlow(
+		onBoardingReq.UserId,
+		onBoardingReq.Sobriety.ReasonForJoining,
+		onBoardingReq.Sobriety.SoberDate,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if err := s.db.CreateOnBoardingFlow(onBoard); err != nil {
+		return err
+	}
+
 	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
-		Data: map[string]string{"message": "Onboarding"},
+		Data: onBoard,
 	})
 }
 
 func (s *Server) CreateAccountHandler(w http.ResponseWriter, r *http.Request) error {
-	return helper.WriteJSON(w, http.StatusCreated, helper.SuccessResponse{
-		Data: map[string]string{"message": "Account Created"},
+
+	createAccountReq := &helper.CreateAccountRequest{}
+	if err := json.NewDecoder(r.Body).Decode(createAccountReq); err != nil {
+		return err
+	}
+	account, err := helper.CreateUserAccount(
+		createAccountReq.Username,
+		createAccountReq.Email,
+		createAccountReq.Password,
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := s.db.CreateAccountFlow(account); err != nil {
+		return err
+	}
+
+	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
+		Data: account,
 	})
 }
 
