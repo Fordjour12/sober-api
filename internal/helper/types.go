@@ -17,7 +17,7 @@ type Sobriety struct {
 }
 
 type OnBoardingRequest struct {
-	UserId    int64     `json:"userId"`
+	UserId    int       `json:"userId"`
 	Sobriety  Sobriety  `json:"sobriety"`
 	CreatedAt time.Time `json:"createdAt"`
 }
@@ -31,7 +31,7 @@ func CreateUserAccount(username, email, password string) (*CreateAccountRequest,
 
 }
 
-func AddOnBoardingFlow(userId int64, reason, date string) (*OnBoardingRequest, error) {
+func AddOnBoardingFlow(userId int, reason, date string) (*OnBoardingRequest, error) {
 
 	return &OnBoardingRequest{
 		UserId: userId,
