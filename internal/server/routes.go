@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sober-api/internal/helper"
@@ -58,6 +59,9 @@ func (s *Server) CreateAccountHandler(w http.ResponseWriter, r *http.Request) er
 		createAccountReq.Email,
 		createAccountReq.Password,
 	)
+
+	fmt.Printf("Account: %+v\n", account.Password)
+
 	if err != nil {
 		return err
 	}
