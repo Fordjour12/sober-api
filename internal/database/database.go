@@ -125,7 +125,7 @@ func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) error {
 
 	fmt.Printf("Account CreateAccountFlow: %+v\n", ac)
 
-	query := `insert into users(username, email, password,created_at) values ($1, $2, $3, $4)`
+	query := `insert into users(username, email, password, created_at) values ($1, $2, $3, $4)`
 
 	_, err := s.db.Exec(
 		query,
@@ -137,7 +137,5 @@ func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
-
 }
