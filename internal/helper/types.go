@@ -2,12 +2,14 @@ package helper
 
 import (
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateAccountRequest struct {
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Password  string    `json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -22,11 +24,27 @@ type OnBoardingRequest struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+func (c *CreateAccountRequest) ValidatePassword(pw string) (bool, error) {
+
+	err := bcrypt.CompareHashAndPassword([]byte(c.Password), []byte(pw))
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func CreateUserAccount(username, email, password string) (*CreateAccountRequest, error) {
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
 	return &CreateAccountRequest{
 		Username:  username,
 		Email:     email,
-		Password:  password,
+		Password:  string(hashedPassword),
 		CreatedAt: time.Now().UTC(),
 	}, nil
 
@@ -42,5 +60,4 @@ func AddOnBoardingFlow(userId int, reason, date string) (*OnBoardingRequest, err
 		},
 		CreatedAt: time.Now().UTC(),
 	}, nil
-
 }
