@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sober-api/internal/database"
@@ -18,7 +19,12 @@ type Server struct {
 }
 
 func NewServer() *http.Server {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil || port == 0 {
+		port = 8080
+		log.Printf("defaulting to port %v", port)
+	}
+
 	NewServer := &Server{
 		port: port,
 
