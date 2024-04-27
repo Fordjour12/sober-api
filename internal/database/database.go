@@ -101,20 +101,22 @@ func (s *service) Health() map[string]string {
 }
 
 func (s *service) CreateOnBoardingFlow(ob *helper.OnBoardingRequest) error {
-	query := `insert into onboarding(user_id, reason, sober_date,created_at) values($1, $2, $3,$4)`
+
+	fmt.Printf("Onboarding CreateOnBoardingFlow: %+v\n", ob)
+
+	query := `insert into onboarding(user_id, reason, sober_date,created_at) values($1, $2, $3, $4)`
 
 	_, err := s.db.Exec(
 		query,
 		ob.UserId,
 		ob.Sobriety.ReasonForJoining,
 		ob.Sobriety.SoberDate,
+		ob.CreatedAt,
 	)
 
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Onboarding Created: %+v\n", ob)
 
 	return nil
 }
