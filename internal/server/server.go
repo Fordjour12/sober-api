@@ -19,11 +19,6 @@ type Server struct {
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	if port == 0 {
-		port = 8080
-
-		fmt.Println("No PORT environment variable detected, defaulting to " + strconv.Itoa(port))
-	}
 
 	NewServer := &Server{
 		port: port,

@@ -42,9 +42,9 @@ func New() Service {
 		db: db,
 	}
 
-	// if err := s.init(); err != nil {
-	// 	log.Fatalf("Error Creating Database Tables: %+v\n", err)
-	// }
+	if err := s.init(); err != nil {
+		log.Fatalf("Error Creating Database Tables: %+v\n", err)
+	}
 
 	return s
 }
