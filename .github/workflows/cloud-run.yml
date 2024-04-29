@@ -2,10 +2,8 @@ name: Build and Deploy to Cloud Run
 
 on:
   push:
-    branches:
-      - dcy
-    # tags:
-    #   - "v*.*.*"
+    tags:
+      - "v*.*.*"
 
 permissions:
   contents: write
