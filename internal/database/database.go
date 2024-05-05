@@ -16,7 +16,8 @@ import (
 type Service interface {
 	Health() map[string]string
 	CreateOnBoardingFlow(*helper.OnBoardingRequest) error
-	CreateAccountFlow(*helper.CreateAccountRequest) error
+	CreateAccountFlow(*helper.CreateAccountRequest) (int, error)
+	CreateNotesFlow(*helper.CreateNotesRequest) (int, error)
 }
 
 type service struct {
@@ -75,6 +76,19 @@ func (s *service) init() error {
 			references users(id)
 			on delete cascade
 		)`,
+
+		` create table if not exists notes(
+	id serial primary key,
+	user_id int not null,
+	content text not null,
+	created_at timestamp with time zone default current_timestamp not null,
+	update_at timestamp with time zone default current_timestamp not null,
+
+	constraint fk_user
+		foreign key (user_id)
+		references users(id)
+		on delete cascade
+	)`,
 	}
 
 	for _, query := range createTableQueries {
@@ -121,21 +135,45 @@ func (s *service) CreateOnBoardingFlow(ob *helper.OnBoardingRequest) error {
 	return nil
 }
 
-func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) error {
+func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) (int, error) {
 
 	fmt.Printf("Account CreateAccountFlow: %+v\n", ac)
 
-	query := `insert into users(username, email, password, created_at) values ($1, $2, $3, $4)`
+	query := `insert into users(username, email, password, created_at) values ($1, $2, $3, $4) returning id`
 
-	_, err := s.db.Exec(
+	var id int
+	err := s.db.QueryRow(
 		query,
 		ac.Username,
 		ac.Email,
 		ac.Password,
 		ac.CreatedAt,
-	)
+	).Scan(&id)
+
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return id, err
+}
+
+func (s *service) CreateNotesFlow(cn *helper.CreateNotesRequest) (int, error) {
+	fmt.Printf("Notes CreateNotesFlow: %+v\n", cn)
+
+	query := `insert into notes(user_id, content, created_at, update_at) values($1, $2, $3, $4)`
+
+	var id int
+	err := s.db.QueryRow(
+		query,
+		cn.UserId,
+		cn.Content,
+		cn.CreatedAt,
+		cn.UpdateAt,
+	).Scan(&id)
+
+	if err != nil {
+		log.Fatalf("Error Creating Notes: %+v\n", err)
+		return 0, err
+	}
+
+	return id, nil
 }
