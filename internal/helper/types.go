@@ -24,6 +24,13 @@ type OnBoardingRequest struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type CreateNotesRequest struct {
+	UserId    int       `json:"userId"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdateAt  time.Time `json:"updateAt"`
+}
+
 func (c *CreateAccountRequest) ValidatePassword(pw string) (bool, error) {
 
 	err := bcrypt.CompareHashAndPassword([]byte(c.Password), []byte(pw))

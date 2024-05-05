@@ -66,17 +66,35 @@ func (s *Server) CreateAccountHandler(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	if err := s.db.CreateAccountFlow(account); err != nil {
+	dst, err := s.db.CreateAccountFlow(account)
+
+	if err != nil {
 		return err
 	}
 
 	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
-		Data: account,
+		// Data: map[string]any{"id": dst, "account": account},
+		Data: struct {
+			ID      int                          `json:"id"`
+			Account *helper.CreateAccountRequest `json:"account"`
+		}{
+			ID:      dst,
+			Account: account,
+		},
 	})
 }
 
+func AddNotesHandler(w http.ResponseWriter, r *http.Request) error {
+	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
+		Data: map[string]string{"message": "Notes Added"},
+	})
+
+}
+
 func (s *Server) LogInAccountHandler(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
+		Data: map[string]string{"message": "Account Logged In"},
+	})
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
