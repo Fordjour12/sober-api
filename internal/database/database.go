@@ -159,7 +159,7 @@ func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) (int, error
 func (s *service) CreateNotesFlow(cn *helper.CreateNotesRequest) (int, error) {
 	fmt.Printf("Notes CreateNotesFlow: %+v\n", cn)
 
-	query := `insert into notes(user_id, content, created_at, update_at) values($1, $2, $3, $4)`
+	query := `insert into notes(user_id, content, created_at, update_at) values ($1, $2, $3, $4) returning id`
 
 	var id int
 	err := s.db.QueryRow(
