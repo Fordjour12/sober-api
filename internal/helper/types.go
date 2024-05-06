@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"os"
 	"time"
 
+	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -73,4 +75,18 @@ func CreateNewNotes(userId int, content string) (*CreateNotesRequest, error) {
 		CreatedAt: time.Now().UTC(),
 		UpdateAt:  time.Now().UTC(),
 	}, nil
+}
+
+func CreateJWTToken(account *CreateAccountRequest) (string, error) {
+
+	claims := &jwt.MapClaims{
+		"expiresAt": time.Now().Add(time.Minute * 15).Unix(),
+		"username":  account.Username,
+		"email":     account.Email,
+	}
+
+	secret := os.Getenv("JWT_SECRET")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString([]byte(secret))
 }
