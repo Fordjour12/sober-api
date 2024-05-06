@@ -32,7 +32,6 @@ type CreateNotesRequest struct {
 }
 
 func (c *CreateAccountRequest) ValidatePassword(pw string) (bool, error) {
-
 	err := bcrypt.CompareHashAndPassword([]byte(c.Password), []byte(pw))
 	if err != nil {
 		return false, err
@@ -42,7 +41,6 @@ func (c *CreateAccountRequest) ValidatePassword(pw string) (bool, error) {
 }
 
 func CreateUserAccount(username, email, password string) (*CreateAccountRequest, error) {
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -58,7 +56,6 @@ func CreateUserAccount(username, email, password string) (*CreateAccountRequest,
 }
 
 func AddOnBoardingFlow(userId int, reason, date string) (*OnBoardingRequest, error) {
-
 	return &OnBoardingRequest{
 		UserId: userId,
 		Sobriety: Sobriety{
@@ -66,5 +63,14 @@ func AddOnBoardingFlow(userId int, reason, date string) (*OnBoardingRequest, err
 			SoberDate:        date,
 		},
 		CreatedAt: time.Now().UTC(),
+	}, nil
+}
+
+func CreateNewNotes(userId int, content string) (*CreateNotesRequest, error) {
+	return &CreateNotesRequest{
+		UserId:    userId,
+		Content:   content,
+		CreatedAt: time.Now().UTC(),
+		UpdateAt:  time.Now().UTC(),
 	}, nil
 }
