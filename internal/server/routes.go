@@ -18,6 +18,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("POST /api/v1/onboarding", helper.MakeHTTPHandlerFunc(s.OnBoardingHandler))
 	mux.HandleFunc("POST /api/v1/create-account", helper.MakeHTTPHandlerFunc(s.CreateAccountHandler))
 	mux.HandleFunc("POST /api/v1/login-account", helper.MakeHTTPHandlerFunc(s.LogInAccountHandler))
+	mux.HandleFunc("POST /api/v1/add-notes", helper.MakeHTTPHandlerFunc(s.AddNotesHandler))
 
 	return mux
 }
@@ -84,9 +85,37 @@ func (s *Server) CreateAccountHandler(w http.ResponseWriter, r *http.Request) er
 	})
 }
 
-func AddNotesHandler(w http.ResponseWriter, r *http.Request) error {
-	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
-		Data: map[string]string{"message": "Notes Added"},
+func (s *Server) AddNotesHandler(w http.ResponseWriter, r *http.Request) error {
+
+	createNotesReq := &helper.CreateNotesRequest{}
+	if err := json.NewDecoder(r.Body).Decode(createNotesReq); err != nil {
+		return err
+	}
+
+	notes, err := helper.CreateNewNotes(
+		createNotesReq.UserId,
+		createNotesReq.Content,
+	)
+
+	fmt.Printf("Account: %+v\n", notes)
+
+	if err != nil {
+		return err
+	}
+
+	userId, err := s.db.CreateNotesFlow(notes)
+	if err != nil {
+		return err
+	}
+
+	return helper.WriteJSON(w, http.StatusCreated, helper.SuccessResponse{
+		Data: struct {
+			ID      int                        `json:"id"`
+			Account *helper.CreateNotesRequest `json:"notes"`
+		}{
+			ID:      userId,
+			Account: notes,
+		},
 	})
 
 }
