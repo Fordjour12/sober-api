@@ -121,9 +121,41 @@ func (s *Server) AddNotesHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Server) LogInAccountHandler(w http.ResponseWriter, r *http.Request) error {
+
+	loginReq := &helper.LoginUserRequest{}
+	if err := json.NewDecoder(r.Body).Decode(loginReq); err != nil {
+		return err
+	}
+
+	account, err := s.db.GetUserByEmail(loginReq.Email)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Account Login %+v\n", account)
+
+	if !account.VerifyPassword(loginReq.Password) {
+		return fmt.Errorf("Not Authorized to access this account %s", loginReq.Password)
+	}
+
+	token, err := helper.CreateJWTToken(account)
+	if err != nil {
+		log.Fatalf("error creating JWT token. Err: %v", err)
+		return err
+	}
+
+	fmt.Printf("Token ==> %s\n", token)
+
 	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
-		Data: map[string]string{"message": "Account Logged In"},
+		Data: struct {
+			Acount *helper.CreateAccountRequest `json:"account"`
+			Token  string                       `json:"token"`
+		}{
+			Acount: account,
+			Token:  token,
+		},
 	})
+
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
