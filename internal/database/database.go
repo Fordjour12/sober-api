@@ -18,6 +18,7 @@ type Service interface {
 	CreateOnBoardingFlow(*helper.OnBoardingRequest) error
 	CreateAccountFlow(*helper.CreateAccountRequest) (int, error)
 	CreateNotesFlow(*helper.CreateNotesRequest) (int, error)
+	GetUserByEmail(string) (*helper.CreateAccountRequest, error)
 }
 
 type service struct {
@@ -159,7 +160,7 @@ func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) (int, error
 func (s *service) CreateNotesFlow(cn *helper.CreateNotesRequest) (int, error) {
 	fmt.Printf("Notes CreateNotesFlow: %+v\n", cn)
 
-	query := `insert into notes(user_id, content, created_at, update_at) values($1, $2, $3, $4)`
+	query := `insert into notes(user_id, content, created_at, update_at) values ($1, $2, $3, $4) returning id`
 
 	var id int
 	err := s.db.QueryRow(
@@ -176,4 +177,25 @@ func (s *service) CreateNotesFlow(cn *helper.CreateNotesRequest) (int, error) {
 	}
 
 	return id, nil
+}
+
+func (s *service) GetUserByEmail(email string) (*helper.CreateAccountRequest, error) {
+	query := `select username, email, password,created_at from users where email = $1`
+
+	fmt.Println("email", email)
+
+	ac := &helper.CreateAccountRequest{}
+	err := s.db.QueryRow(query, email).Scan(
+		&ac.Username,
+		&ac.Email,
+		&ac.Password,
+		&ac.CreatedAt,
+	)
+
+	if err != nil {
+		log.Fatalf("Error Getting User By Email: %+v\n", err)
+		return nil, err
+	}
+
+	return ac, nil
 }

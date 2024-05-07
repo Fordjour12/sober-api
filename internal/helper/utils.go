@@ -55,3 +55,10 @@ func MakeHTTPHandlerFunc(fn apiFn) http.HandlerFunc {
 		}
 	}
 }
+
+func PermissionError() APIError {
+	return APIError{
+		Status:  http.StatusForbidden,
+		Message: "You do not have permission to access this resource",
+	}
+}

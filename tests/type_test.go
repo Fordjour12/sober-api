@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"sober-api/internal/database"
 	"sober-api/internal/helper"
 	"testing"
 
@@ -26,4 +27,12 @@ func testingOnBoardingReq(t *testing.T) {
 
 	fmt.Println(boarding)
 
+}
+
+func testingGetUserByEmail(t *testing.T) {
+
+	user, err := database.New().GetUserByEmail("bfk@em1ai2l.com")
+	assert.Nil(t, err)
+
+	fmt.Println(user)
 }
