@@ -34,6 +34,16 @@ type CreateNotesRequest struct {
 	UpdateAt  time.Time `json:"updateAt"`
 }
 
+type LoginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (ac *CreateAccountRequest) VerifyPassword(password string) bool {
+	fmt.Println("Verifying Password ==>", ac.Password)
+	return bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(password)) == nil
+}
+
 func (c *CreateAccountRequest) ValidatePassword(pw string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(c.Password), []byte(pw))
 	if err != nil {
@@ -75,6 +85,13 @@ func CreateNewNotes(userId int, content string) (*CreateNotesRequest, error) {
 		Content:   content,
 		CreatedAt: time.Now().UTC(),
 		UpdateAt:  time.Now().UTC(),
+	}, nil
+}
+
+func LoginUserAccount(email, password string) (*LoginUserRequest, error) {
+	return &LoginUserRequest{
+		Email:    email,
+		Password: password,
 	}, nil
 }
 
