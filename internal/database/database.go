@@ -182,8 +182,6 @@ func (s *service) CreateNotesFlow(cn *helper.CreateNotesRequest) (int, error) {
 func (s *service) GetUserByEmail(email string) (*helper.CreateAccountRequest, error) {
 	query := `select username, email, password,created_at from users where email = $1`
 
-	fmt.Println("email", email)
-
 	ac := &helper.CreateAccountRequest{}
 	err := s.db.QueryRow(query, email).Scan(
 		&ac.Username,

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"sober-api/internal/helper"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -122,8 +124,9 @@ func (s *Server) AddNotesHandler(w http.ResponseWriter, r *http.Request) error {
 
 func (s *Server) LogInAccountHandler(w http.ResponseWriter, r *http.Request) error {
 
-	loginReq := &helper.LoginUserRequest{}
-	if err := json.NewDecoder(r.Body).Decode(loginReq); err != nil {
+	//loginReq := &helper.LoginUserRequest{}
+	var loginReq helper.LoginUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
 		return err
 	}
 
@@ -132,28 +135,29 @@ func (s *Server) LogInAccountHandler(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	fmt.Printf("Account Login %+v\n", account)
+	fmt.Printf("Account: %+v\n", account.Password)
 
-	if !account.VerifyPassword(loginReq.Password) {
-		return fmt.Errorf("Not Authorized to access this account %s", loginReq.Password)
-	}
+	isValid := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(loginReq.Password)) == nil
 
-	token, err := helper.CreateJWTToken(account)
-	if err != nil {
-		log.Fatalf("error creating JWT token. Err: %v", err)
-		return err
-	}
+	fmt.Printf("Account: %+v\n", isValid)
 
-	fmt.Printf("Token ==> %s\n", token)
+	// if !account.Password(loginReq.Password) {
+	// 	return fmt.Errorf("not Auth %s", loginReq.Password)
+	// }
 
+	//	token, err := helper.CreateJWTToken(account)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	response := helper.LoginResponse{
+	//		Username: account.Username,
+	//		Email:    account.Email,
+	//		Token:    token,
+	//	}
+	//
 	return helper.WriteJSON(w, http.StatusOK, helper.SuccessResponse{
-		Data: struct {
-			Acount *helper.CreateAccountRequest `json:"account"`
-			Token  string                       `json:"token"`
-		}{
-			Acount: account,
-			Token:  token,
-		},
+		Data: account,
 	})
 
 }

@@ -39,18 +39,22 @@ type LoginUserRequest struct {
 	Password string `json:"password"`
 }
 
-func (ac *CreateAccountRequest) VerifyPassword(password string) bool {
-	fmt.Println("Verifying Password ==>", ac.Password)
-	return bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(password)) == nil
+type LoginResponse struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Token    string `json:"token"`
 }
 
-func (c *CreateAccountRequest) ValidatePassword(pw string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword([]byte(c.Password), []byte(pw))
-	if err != nil {
-		return false, err
+func (ac *CreateAccountRequest) ValidPassword(pw string) bool {
+	//	return bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(pw)) == nil
+	//
+	isValid := bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(pw)) == nil
+	if isValid {
+		fmt.Println("The password is valid.")
+	} else {
+		fmt.Println("The password is not valid.")
 	}
-
-	return true, nil
+	return isValid
 }
 
 func CreateUserAccount(username, email, password string) (*CreateAccountRequest, error) {
