@@ -14,6 +14,7 @@ type Response struct {
 type apiFn func(http.ResponseWriter, *http.Request) error
 
 type SuccessResponse struct {
+	Status int  `json:"status"`
 	Data interface{} `json:"data"`
 }
 
@@ -28,10 +29,12 @@ func (e APIError) Error() string {
 
 func WriteJSON(w http.ResponseWriter, status int, data any) error {
 	w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(Response{
-		Status:  status,
-		Message: data,
-	})
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(data)
+	//		Response{
+	//		Status:  status,
+	//		Message: data,
+	//	})
 
 }
 

@@ -15,10 +15,10 @@ import (
 
 type Service interface {
 	Health() map[string]string
-	CreateOnBoardingFlow(*helper.OnBoardingRequest) error
-	CreateAccountFlow(*helper.CreateAccountRequest) (int, error)
-	CreateNotesFlow(*helper.CreateNotesRequest) (int, error)
-	GetUserByEmail(string) (*helper.CreateAccountRequest, error)
+	CreateAccount(*helper.Account) (*helper.Account, error)
+	GetUserByEmail(string) (*helper.Account, error)
+	CreateUserOnBoarding(*helper.OnBoardingRequest) error
+	CreateNotes(*helper.CreateNotesRequest) error
 }
 
 type service struct {
@@ -115,10 +115,47 @@ func (s *service) Health() map[string]string {
 	}
 }
 
-func (s *service) CreateOnBoardingFlow(ob *helper.OnBoardingRequest) error {
+func (s *service) CreateAccount(ca *helper.Account) (*helper.Account, error) {
+	query := `INSERT INTO users(username, email, password, created_at) VALUES ($1, $2, $3, $4) RETURNING id, username, email, password, created_at`
+	account := &helper.Account{}
 
-	fmt.Printf("Onboarding CreateOnBoardingFlow: %+v\n", ob)
+	err := s.db.QueryRow(
+		query,
+		ca.Username,
+		ca.Email,
+		ca.Password,
+		ca.CreatedAt,
+	).Scan(&account.ID, &account.Username, &account.Email, &account.Password, &account.CreatedAt)
 
+	if err != nil {
+		return nil, err
+	}
+
+	return account, nil
+}
+
+func (s *service) GetUserByEmail(email string) (*helper.Account, error) {
+	query := `SELECT id, username, email, password, created_at FROM users WHERE email = $1`
+	account := &helper.Account{}
+
+	err := s.db.QueryRow(
+		query,
+		email,
+	).Scan(
+		&account.ID,
+		&account.Username,
+		&account.Email,
+		&account.Password,
+		&account.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return account, nil
+}
+
+func (s *service) CreateUserOnBoarding(ob *helper.OnBoardingRequest) error {
 	query := `insert into onboarding(user_id, reason, sober_date,created_at) values($1, $2, $3, $4)`
 
 	_, err := s.db.Exec(
@@ -136,66 +173,20 @@ func (s *service) CreateOnBoardingFlow(ob *helper.OnBoardingRequest) error {
 	return nil
 }
 
-func (s *service) CreateAccountFlow(ac *helper.CreateAccountRequest) (int, error) {
+func (s *service) CreateNotes(cn *helper.CreateNotesRequest) error {
 
-	fmt.Printf("Account CreateAccountFlow: %+v\n", ac)
+	query := `insert into notes(user_id, content, created_at, update_at) values ($1, $2, $3, $4)`
 
-	query := `insert into users(username, email, password, created_at) values ($1, $2, $3, $4) returning id`
-
-	var id int
-	err := s.db.QueryRow(
-		query,
-		ac.Username,
-		ac.Email,
-		ac.Password,
-		ac.CreatedAt,
-	).Scan(&id)
-
-	if err != nil {
-		return 0, err
-	}
-	return id, err
-}
-
-func (s *service) CreateNotesFlow(cn *helper.CreateNotesRequest) (int, error) {
-	fmt.Printf("Notes CreateNotesFlow: %+v\n", cn)
-
-	query := `insert into notes(user_id, content, created_at, update_at) values ($1, $2, $3, $4) returning id`
-
-	var id int
-	err := s.db.QueryRow(
+	_, err := s.db.Exec(
 		query,
 		cn.UserId,
 		cn.Content,
 		cn.CreatedAt,
 		cn.UpdateAt,
-	).Scan(&id)
-
-	if err != nil {
-		log.Fatalf("Error Creating Notes: %+v\n", err)
-		return 0, err
-	}
-
-	return id, nil
-}
-
-func (s *service) GetUserByEmail(email string) (*helper.CreateAccountRequest, error) {
-	query := `select username, email, password,created_at from users where email = $1`
-
-	fmt.Println("email", email)
-
-	ac := &helper.CreateAccountRequest{}
-	err := s.db.QueryRow(query, email).Scan(
-		&ac.Username,
-		&ac.Email,
-		&ac.Password,
-		&ac.CreatedAt,
 	)
-
 	if err != nil {
-		log.Fatalf("Error Getting User By Email: %+v\n", err)
-		return nil, err
+		return err
 	}
 
-	return ac, nil
+	return nil
 }
