@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -9,10 +9,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type CreateAccountRequest struct {
+type Account struct {
+	ID        int       `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  string    `json:"-"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type CreateAccountRequest struct {
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -45,31 +53,17 @@ type LoginResponse struct {
 	Token    string `json:"token"`
 }
 
-func (ac *CreateAccountRequest) ValidPassword(pw string) bool {
-	//	return bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(pw)) == nil
-	//
-	isValid := bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(pw)) == nil
-	if isValid {
-		fmt.Println("The password is valid.")
-	} else {
-		fmt.Println("The password is not valid.")
-	}
-	return isValid
-}
-
-func CreateUserAccount(username, email, password string) (*CreateAccountRequest, error) {
+func CreateNewUserAccount(username, email, password string) (*Account, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
-
-	return &CreateAccountRequest{
+	return &Account{
 		Username:  username,
 		Email:     email,
 		Password:  string(hashedPassword),
 		CreatedAt: time.Now().UTC(),
 	}, nil
-
 }
 
 func AddOnBoardingFlow(userId int, reason, date string) (*OnBoardingRequest, error) {
@@ -99,28 +93,33 @@ func LoginUserAccount(email, password string) (*LoginUserRequest, error) {
 	}, nil
 }
 
-func CreateJWTToken(account *CreateAccountRequest) (string, error) {
+func (ac *Account) ValidPassword(password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(ac.Password), []byte(password)) == nil
+}
+
+func CreateJWTToken(ac *Account) (string, error) {
 
 	claims := &jwt.MapClaims{
 		"expiresAt": time.Now().Add(time.Minute * 15).Unix(),
-		"username":  account.Username,
-		"email":     account.Email,
+		"username":  ac.Username,
+		"email":     ac.Email,
 	}
 
 	secret := os.Getenv("JWT_SECRET")
+	log.Printf("jwt %+v:", secret)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(secret))
 }
 
-func ValidateJWTToken(tokenString string) (*jwt.Token, error) {
-
-	secret := os.Getenv("JWT_SECRET")
-
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secret), nil
-	})
+func AccountOnBoarding(userId int, reason, date string) (*OnBoardingRequest, error) {
+	return &OnBoardingRequest{
+		UserId: userId,
+		Sobriety: Sobriety{
+			ReasonForJoining: reason,
+			SoberDate:        date,
+		},
+		CreatedAt: time.Now().UTC(),
+	}, nil
 }
